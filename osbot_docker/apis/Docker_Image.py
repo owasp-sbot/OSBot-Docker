@@ -28,15 +28,15 @@ class Docker_Image(Type_Safe):
     def client_docker(self):
         return self.api_docker.client_docker()
 
-    def create_container(self, command='', volumes=None, tty=False, port_bindings=None, labels=None):
+    def create_container(self, command='', volumes=None, tty=False, port_bindings=None, labels=None, name=None, **kwargs    ):
         """Creates a Docker container and returns its ID."""
         exposed_ports = None
         if port_bindings:
             exposed_ports = list(port_bindings.keys())
         image           = self.image_name_with_tag()
         host_config     = self.client_api().create_host_config(binds=volumes, port_bindings=port_bindings)
-        container_raw   = self.client_api().create_container(image=image, command=command, host_config=host_config, tty=tty, ports=exposed_ports, labels=labels)
-        container_id    = container_raw.get('Id')
+        create_result   = self.client_api().create_container(image=image, command=command, host_config=host_config, tty=tty, ports=exposed_ports, labels=labels, name=name, **kwargs)
+        container_id    = create_result.get('Id')
         container       = Docker_Container(container_id=container_id, api_docker=self.api_docker)
         return container
 

@@ -1,17 +1,20 @@
 from docker.errors                       import NotFound
+from docker.models.containers import Container
+from osbot_utils.decorators.methods.cache_on_self import cache_on_self
 from osbot_utils.type_safe.Type_Safe     import Type_Safe
 from osbot_docker.apis.API_Docker        import API_Docker
 from osbot_utils.utils.Misc              import date_time_from_to_str, wait_for
 
 
 class Docker_Container(Type_Safe):
-    api_docker : API_Docker
-    container_id : str = None
+    api_docker    : API_Docker
+    container_id  : str        = None
+    #container_raw : Container  = None                              # todo: see if we shouldn't rename this var to just 'container'
 
-    def __init__(self, container_id, container_raw=None, **kwargs):                     # todo: refactor this to be more inline with how Type_Safe works
-        self.container_id  = container_id
-        self.container_raw = container_raw                                              # initial docker_api container_raw data
-        super().__init__(**kwargs)
+    # def __init__(self, container_id, container_raw=None, **kwargs):                     # todo: refactor this to be more inline with how Type_Safe works
+    #     self.container_id  = container_id
+    #     self.container_raw = container_raw                                              # initial docker_api container_raw data
+    #     super().__init__(**kwargs)
 
     def __repr__(self):
         return f"<Docker_Container: {self.short_id()}>"
@@ -21,6 +24,10 @@ class Docker_Container(Type_Safe):
 
     def client_docker(self):
         return self.api_docker.client_docker()
+
+    @cache_on_self
+    def container(self):
+        return self.client_docker().containers.get(self.container_id)
 
     def delete(self):
         if self.exists():
@@ -47,8 +54,7 @@ class Docker_Container(Type_Safe):
 
     def info_raw(self):
         try:
-            container = self.client_docker().containers.get(self.container_id)
-            return container.attrs
+            return self.container().attrs
         except NotFound:
             return {}
 
@@ -86,8 +92,8 @@ class Docker_Container(Type_Safe):
                 return logs.decode('utf-8')
         return ''
 
-    def name(self):                             # todo see what are the performance implications of using info here (which make a full rest call to get the data)
-        return self.info().get('name')
+    def name(self):
+        return self.container().name
 
     def start(self, wait_for_running=True):
         self.client_api().start(container=self.container_id)

@@ -2,6 +2,7 @@ from collections import defaultdict
 
 import docker
 from docker                                         import APIClient
+from osbot_utils.type_safe.Type_Safe import Type_Safe
 
 from osbot_utils.utils.Misc import bytes_to_str
 
@@ -13,11 +14,9 @@ from osbot_utils.decorators.methods.catch           import catch
 from osbot_utils.utils.Str import trim
 
 
-class API_Docker:
-
-    def __init__(self, debug=False):
-        self.debug              = debug
-        self.docker_run_timeout = None
+class API_Docker(Type_Safe):
+    debug             : bool = False
+    docker_run_timeout: int  = None
 
     @cache_on_self
     def client_api(self):
@@ -63,7 +62,7 @@ class API_Docker:
         containers = []
         for container_raw in self.containers_raw(**kwargs):
             container_id = container_raw.id
-            docker_container = Docker_Container(container_id=container_id, api_docker=self, container_raw=container_raw)
+            docker_container = Docker_Container(container_id=container_id, api_docker=self)
             #container = self.container_attrs_parse(container_raw.attrs)
             containers.append(docker_container)
         return containers
@@ -78,6 +77,12 @@ class API_Docker:
         for container in self.containers_all():
             containers_by_id[container.short_id()] = container
         return containers_by_id
+
+    def containers_all__by_name(self):
+        containers_by_name = {}
+        for container in self.containers_all():
+            containers_by_name[container.name()] = container
+        return containers_by_name
 
     def containers_all__by_labels(self):
         containers_by_labels = defaultdict(lambda: defaultdict(dict))
