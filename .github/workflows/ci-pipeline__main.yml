@@ -8,7 +8,7 @@ on:
 env:
   GIT__BRANCH      : 'main'
   RELEASE_TYPE     : 'major'
-  PACKAGE_NAME     : 'osbot-docker'
+  PACKAGE_NAME     : 'osbot_docker'
 
 jobs:
 
