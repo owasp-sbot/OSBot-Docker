@@ -12,7 +12,6 @@ repository  = "https://github.com/owasp-sbot/OSBot-Docker"
 python          = "^3.7"
 osbot-utils     = "*"
 docker          = "*"
-python-dotenv   = "*"
 pyyaml          = "*"
 
 [build-system]

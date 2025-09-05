@@ -1,3 +1,10 @@
+# for osbot
+osbot-utils
+
+# for docker
+docker
+pyyaml
+
 # for testing
 pytest
 coveralls
