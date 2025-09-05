@@ -1,18 +1,20 @@
-from docker.errors import NotFound, APIError
+from docker.errors                          import APIError
+from osbot_utils.type_safe.Type_Safe        import Type_Safe
+from osbot_docker.apis.Docker_Container     import Docker_Container
+from osbot_utils.decorators.methods.catch   import catch
+from osbot_docker.apis.API_Docker           import API_Docker
 
-from osbot_docker.apis.Docker_Container import Docker_Container
-from osbot_utils.decorators.methods.catch import catch
-from osbot_utils.utils.Dev import pprint
+class Docker_Image(Type_Safe):
+    api_docker : API_Docker
+    image_id   : str
+    image_name : str = None
+    image_tag  = str = None
 
-
-class Docker_Image:
-
-    def __init__(self, image_name, image_tag='latest', image_id = None, api_docker=None):
-        from osbot_docker.apis.API_Docker import API_Docker
-        self.api_docker = api_docker or API_Docker()
+    def __init__(self, image_name, image_tag='latest', image_id = None, **kwargs):                  # todo: refactor this to be more inline with how Type_Safe works
         self.image_id   = image_id or ''
         self.image_name = image_name
         self.image_tag  = image_tag
+        super().__init__(**kwargs)
 
     def __repr__(self):
         return f"{self.image_name}:{self.image_tag} {self.short_id()}"
@@ -35,7 +37,7 @@ class Docker_Image:
         host_config     = self.client_api().create_host_config(binds=volumes, port_bindings=port_bindings)
         container_raw   = self.client_api().create_container(image=image, command=command, host_config=host_config, tty=tty, ports=exposed_ports, labels=labels)
         container_id    = container_raw.get('Id')
-        container       = Docker_Container(container_id=container_id, api_docker=self)
+        container       = Docker_Container(container_id=container_id, api_docker=self.api_docker)
         return container
 
     # todo: add solution that supports streaming of docker file creation, this version will only return when the docker build execute completes
@@ -91,5 +93,7 @@ class Docker_Image:
 
     def short_id(self):
         return self.image_id[:12]
+
+
 
 
