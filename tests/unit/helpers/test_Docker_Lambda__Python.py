@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from osbot_utils.utils.Dev import pprint
+from osbot_utils.utils.Misc import wait_for
 
 import docker_images
 from osbot_docker.helpers.Docker_Lambda__Python import Docker_Lambda__Python
@@ -17,16 +18,19 @@ class test_Docker_Lambda__Python(TestCase):
         pass
 
     def test_create_container(self):
-        container = self.docker_lambda__python.create_container()
-        assert container.exists() is True
-        assert container.info().get('image') == f"{self.docker_lambda__python.image_name}:latest"
-        assert container.status() == 'created'
-        assert container.start() is True
-        assert container.status() == 'running'
-        assert "(rapid) exec '/var/runtime/bootstrap' (cwd=/var/task, handler=)" in container.logs()
-        assert container.stop() is True
-        assert container.status() == 'exited'
-        assert container.delete() is True
+        with self.docker_lambda__python.create_container() as _:
+            assert _.exists       () is True
+            assert _.info         ().get('image') == f"{self.docker_lambda__python.image_name}:latest"
+            assert _.status       () == 'created'
+            assert _.start        () is True
+            assert _.status       () == 'running'
+            assert _.wait_for_logs() is True
+
+            assert "(rapid) exec '/var/runtime/bootstrap' (cwd=/var/task, handler=)" in _.logs()
+
+            assert _.stop        () is True
+            assert _.status      () == 'exited'
+            assert _.delete      () is True
 
     def test_image_build(self):
         result = self.docker_lambda__python.image_build()

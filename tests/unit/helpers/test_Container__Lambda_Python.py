@@ -9,13 +9,11 @@ from osbot_docker.helpers.Container__Lambda_Python import Container__Lambda_Pyth
 class test_Container__Lambda_Python(TestCase):
 
     def test__enter__exit(self):
-        print()
         with Container__Lambda_Python() as _:
             assert _.container.exists() is True
-            print(_.container.logs())
+            assert _.container.wait_for_logs() is True
             assert _.invoke(               ) == 'docker - hello world!'
             assert _.invoke({'name':'aaaa'}) == 'docker - hello aaaa!'
-
         assert _.container.exists() is False
 
     def test_docker_setup(self):

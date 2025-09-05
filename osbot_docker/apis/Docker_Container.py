@@ -1,15 +1,17 @@
 from docker.errors                       import NotFound
+from osbot_utils.type_safe.Type_Safe     import Type_Safe
+from osbot_docker.apis.API_Docker        import API_Docker
+from osbot_utils.utils.Misc              import date_time_from_to_str, wait_for
 
-from osbot_docker.apis.API_Docker                import API_Docker
-from osbot_utils.utils.Misc                 import date_time_from_to_str, wait_for
 
+class Docker_Container(Type_Safe):
+    api_docker : API_Docker
+    container_id : str = None
 
-class Docker_Container:
-
-    def __init__(self, container_id, api_docker:API_Docker=None, container_raw=None):
-        self.api_docker    = api_docker or API_Docker()
+    def __init__(self, container_id, container_raw=None, **kwargs):                     # todo: refactor this to be more inline with how Type_Safe works
         self.container_id  = container_id
-        self.container_raw = container_raw     # initial docker_api container_raw data
+        self.container_raw = container_raw                                              # initial docker_api container_raw data
+        super().__init__(**kwargs)
 
     def __repr__(self):
         return f"<Docker_Container: {self.short_id()}>"
@@ -117,4 +119,11 @@ class Docker_Container:
                 return True                                 # Container has reached the desired status
             wait_for(wait_delta)
             wait_count-=1
+        return False
+
+    def wait_for_logs(self, max_attempts=20, delay_interval=0.1):
+        for i in range(0,max_attempts):
+            if self.logs() != "":
+                return True
+            wait_for(delay_interval)
         return False
